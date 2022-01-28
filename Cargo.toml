@@ -2,21 +2,20 @@
 name = "stop-goguardian"
 version = "0.1.0"
 edition = "2021"
+include = ["src/main.rs", "LICENSE", "README.md"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 sysinfo = "0.23"
-whoami = { version = "1.2", optional = true }
+winrt-notification = { version = "0.5.1", optional = true }
 
 [profile.release]
-lto = true
-opt-level = "s"
-
-[[bin]]
-name = "stop-goguardian-installer"
-path = "src/installer.rs"
-required-features = ["installer"]
+opt-level = "z"   # Optimize for size.
+lto = true        # Enable Link Time Optimization
+codegen-units = 1 # Reduce number of codegen units to increase optimizations.
+panic = "abort"   # Abort on panic
+strip = "symbols" # Strip unused symbols
 
 [features]
-installer = []
+auth = ["winrt-notification"]

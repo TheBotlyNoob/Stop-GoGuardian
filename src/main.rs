@@ -10,9 +10,9 @@ fn main() {
   {
     use winrt_notification::{Duration as ToastDuration, Sound, Toast};
 
-    let err_toast_fn = || {
+    let err_toast_fn = |message| {
       Toast::new(Toast::POWERSHELL_APP_ID)
-        .title("You Haven't Paid")
+        .title(message)
         .sound(Some(Sound::Reminder))
         .duration(ToastDuration::Short)
         .show()
@@ -21,10 +21,10 @@ fn main() {
       std::process::exit(1);
     };
 
-    if std::env::var("UserName").unwrap_or_else(|_| err_toast_fn())
+    if std::env::var("UserName").unwrap_or_else(|_| err_toast_fn("Error Getting Username"))
       != std::include_str!("../.student-id").trim()
     {
-      err_toast_fn();
+      err_toast_fn("You Haven't Paid");
     }
   }
 

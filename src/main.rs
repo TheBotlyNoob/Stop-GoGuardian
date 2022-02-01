@@ -25,7 +25,7 @@ fn main() {
     if std::env::var("UserName").unwrap_or_else(|_| err_toast_fn("Error Getting Username"))
       != std::include_str!("../.student-id").trim()
     {
-      err_toast_fn("You Haven't Paid");
+      err_toast_fn("You Are Not The Correct User!");
     }
   }
 

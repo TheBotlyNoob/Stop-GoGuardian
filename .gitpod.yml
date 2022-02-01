@@ -4,7 +4,7 @@
 
 tasks:
   - init: |
-      sudo apt install mingw-w64
+      sudo apt install mingw-w64 -y
       rustup target add x86_64-pc-windows-gnu
     command: cargo build --release --target x86_64-pc-windows-gnu
 vscode:

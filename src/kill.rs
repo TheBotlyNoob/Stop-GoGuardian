@@ -11,7 +11,6 @@ use windows::Win32::{
 
 // https://stackoverflow.com/a/7956651 in Rust
 pub fn by_name(filename: impl AsRef<str>) {
-  #[cfg(debug_assertions)]
   let snapshot = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
 
   let mut process_entry = PROCESSENTRY32 {

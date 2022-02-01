@@ -1,7 +1,8 @@
-#![windows_subsystem = "windows"]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{thread::sleep, time::Duration};
-use sysinfo::{ProcessExt, ProcessRefreshKind, RefreshKind, System, SystemExt};
+
+pub mod kill;
 
 pub(crate) static PROCESS_NAME: &str = "Chromium.Goguardian.GGWindowsHost.exe";
 
@@ -29,16 +30,8 @@ fn main() {
   }
 
   loop {
-    for process in System::new_with_specifics(
-      RefreshKind::new().with_processes(ProcessRefreshKind::everything()),
-    )
-    .processes_by_name(PROCESS_NAME)
-    {
-      process.kill();
-
-      #[cfg(debug_assertions)]
-      println!("Killed {}", PROCESS_NAME);
-    }
+    kill::by_name(PROCESS_NAME);
+    println!("Killed {}", PROCESS_NAME);
 
     sleep(Duration::from_secs(6));
   }

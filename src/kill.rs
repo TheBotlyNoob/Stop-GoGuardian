@@ -1,9 +1,9 @@
-use std::ptr;
+use std::ffi::CStr;
 use windows::Win32::{
   Foundation::CloseHandle,
   System::{
     Diagnostics::ToolHelp::{
-      CreateToolhelp32Snapshot, Process32First, PROCESSENTRY32, TH32CS_SNAPALL,
+      CreateToolhelp32Snapshot, Process32First, Process32Next, PROCESSENTRY32, TH32CS_SNAPPROCESS,
     },
     Threading::{OpenProcess, TerminateProcess, PROCESS_TERMINATE},
   },
@@ -11,17 +11,26 @@ use windows::Win32::{
 
 // https://stackoverflow.com/a/7956651 in Rust
 pub fn by_name(filename: impl AsRef<str>) {
-  let snapshot = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPALL, 0) };
-  let mut process_entry = PROCESSENTRY32::default();
+  #[cfg(debug_assertions)]
+  let snapshot = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
+
+  let mut process_entry = PROCESSENTRY32 {
+    dwSize: std::mem::size_of::<PROCESSENTRY32>() as u32,
+    ..PROCESSENTRY32::default()
+  };
+
   let mut res = unsafe { Process32First(snapshot, &mut process_entry).as_bool() };
 
-  println!(
-    "l: {:#?}",
-    String::from_utf8(process_entry.szExeFile.map(|char| char.0).to_vec()).unwrap()
-  );
-
   while res {
-    if std::str::from_utf8(&process_entry.szExeFile.map(|char| char.0)) == Ok(filename.as_ref()) {
+    let process_name = unsafe {
+      CStr::from_ptr(process_entry.szExeFile.as_ptr() as _)
+        .to_string_lossy()
+        .to_lowercase()
+    };
+    if process_name == filename.as_ref().to_lowercase() {
+      #[cfg(debug_assertions)]
+      println!("[+] Killing {process_name}...");
+
       let process_handle =
         unsafe { OpenProcess(PROCESS_TERMINATE, None, process_entry.th32ProcessID) };
 
@@ -31,7 +40,7 @@ pub fn by_name(filename: impl AsRef<str>) {
       }
     }
 
-    res = unsafe { Process32First(snapshot, ptr::addr_of_mut!(process_entry)).as_bool() };
+    res = unsafe { Process32Next(snapshot, &mut process_entry).as_bool() };
   }
   unsafe { CloseHandle(snapshot) };
 }

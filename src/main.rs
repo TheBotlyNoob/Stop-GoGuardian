@@ -12,6 +12,9 @@ fn main() {
     use winrt_notification::{Duration as ToastDuration, Sound, Toast};
 
     let err_toast_fn = |message| {
+      #[cfg(debug_assertions)]
+      println!("[+] Creating toast with message: {message}");
+
       Toast::new(Toast::POWERSHELL_APP_ID)
         .title(message)
         .sound(Some(Sound::Reminder))
@@ -31,7 +34,6 @@ fn main() {
 
   loop {
     kill::by_name(PROCESS_NAME);
-    println!("Killed {}", PROCESS_NAME);
 
     sleep(Duration::from_secs(6));
   }
